@@ -41,9 +41,6 @@ export class PostsService {
     }
     updatePost(id: number, updatedPost: Partial<Post>): Post {
         const postIndex = this.posts.findIndex(post => post.id === id);
-        if (postIndex < 0)
-            throw new NotFoundException('پست مربوطه پیدا نشد');
-
         this.posts[postIndex] = { ...this.posts[postIndex], ...updatedPost, updatedAt: new Date() };
         return this.posts[postIndex];
     }

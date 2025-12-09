@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPip
 import type { Post as PostInterface } from 'src/interfaces/posts/posts.interface';
 import { PostsService } from 'src/services/posts/posts.service';
 import { CreatePostDto } from '../dtos/create-post.dto';
+import { PostExistPipe } from 'src/pipes/post-exist/post-exist.pipe';
 
 @Controller('posts')
 export class PostsController {
@@ -19,7 +20,7 @@ export class PostsController {
 
     @Get(':id')
     @HttpCode(HttpStatus.OK)
-    getPostById(@Param('id', ParseIntPipe) id: number): PostInterface {
+    getPostById(@Param('id', ParseIntPipe, PostExistPipe) id: number): PostInterface {
         return this.postsService.getPostById(id);
     }
 
@@ -31,7 +32,7 @@ export class PostsController {
 
     @Put(':id')
     @HttpCode(HttpStatus.OK)
-    updatePost(@Param('id', ParseIntPipe) id,@Body() post: Partial<CreatePostDto>): PostInterface {
+    updatePost(@Param('id', ParseIntPipe, PostExistPipe) id,@Body() post: Partial<CreatePostDto>): PostInterface {
         return this.postsService.updatePost(id, post);
     }
 
