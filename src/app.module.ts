@@ -9,6 +9,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PostEntity } from './posts/entities/post.entity';
 import { AuthModule } from './auth/auth.module';
 import { AuthService } from './services/auth/auth.service';
+import { UserEntity } from './auth/entities/user.entity';
 
 @Module({
   imports: [
@@ -26,7 +27,7 @@ import { AuthService } from './services/auth/auth.service';
       password: '123',
       port: 5432,
       database: 'Nestjs-Posts',
-      entities: [PostEntity],
+      entities: [PostEntity, UserEntity],
       synchronize: true
     }),
     UserModule,
