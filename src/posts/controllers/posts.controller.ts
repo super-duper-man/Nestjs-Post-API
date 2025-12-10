@@ -10,8 +10,8 @@ export class PostsController {
 
     @Get()
     @HttpCode(HttpStatus.OK)
-    getAllWithQuery(@Query('search') search?: string): PostInterface[]{
-        const posts = this.postsService.getAllPosts();
+    async getAllWithQuery(@Query('search') search?: string): Promise<PostInterface[]>{
+        const posts = await this.postsService.getAllPosts();
         if(search){
             return posts.filter(posts => posts.title.toLowerCase().includes(search.toLowerCase()) || posts.content.toLowerCase().includes(search.toLowerCase()));
         }
@@ -20,25 +20,25 @@ export class PostsController {
 
     @Get(':id')
     @HttpCode(HttpStatus.OK)
-    getPostById(@Param('id', ParseIntPipe, PostExistPipe) id: number): PostInterface {
-        return this.postsService.getPostById(id);
+    async getPostById(@Param('id', ParseIntPipe, PostExistPipe) id: number): Promise<PostInterface> {
+        return await this.postsService.getPostById(id);
     }
 
     @Post()
     @HttpCode(HttpStatus.CREATED)
-    createPost(@Body() post: CreatePostDto): PostInterface {
-        return this.postsService.createPost(post);
+    async createPost(@Body() post: CreatePostDto): Promise<PostInterface> {
+        return await this.postsService.createPost(post);
     }
 
     @Put(':id')
     @HttpCode(HttpStatus.OK)
-    updatePost(@Param('id', ParseIntPipe, PostExistPipe) id,@Body() post: Partial<CreatePostDto>): PostInterface {
-        return this.postsService.updatePost(id, post);
+    async updatePost(@Param('id', ParseIntPipe, PostExistPipe) id,@Body() post: Partial<CreatePostDto>): Promise<PostInterface> {
+        return await this.postsService.updatePost(id, post);
     }
 
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
-    deletePost(@Param('id', ParseIntPipe) id: number): void {
-        this.postsService.deletePost(id);
+    async deletePost(@Param('id', ParseIntPipe) id: number): Promise<PostInterface> {
+        return await this.postsService.deletePost(id);
     }
 }

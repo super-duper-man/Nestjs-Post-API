@@ -1,5 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Post } from 'src/interfaces/posts/posts.interface';
+import { CreatePostDto } from 'src/posts/dtos/create-post.dto';
+import { PostEntity } from 'src/posts/entities/post.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class PostsService {
@@ -20,39 +24,44 @@ export class PostsService {
         },
     ];
 
-    getAllPosts(): Post[] {
-        return this.posts;
+    constructor(@InjectRepository(PostEntity) private readonly postRepo: Repository<PostEntity>) { }
+
+    async getAllPosts(): Promise<Post[]> {
+        const posts = await this.postRepo.find();
+        return posts;
     }
-    getPostById(id: number): Post {
-        const post = this.posts.find(post => post.id === id);
+   async getPostById(id: number): Promise<Post> {
+        const post = await this.postRepo.findOneBy({id});
         if (!post)
             throw new NotFoundException('پست مربوطه پیدا نشد');
 
         return post;
     }
-    createPost(post: Omit<Post, 'id' | 'createdAt'>): Post {
-        const newPost: Post = {
-            id: this.getNextId(),
-            createdAt: new Date(),
-            ...post
-        };
-        this.posts.push(newPost);
-        return newPost
+   async createPost(post: CreatePostDto): Promise<Post> {
+        const newPost = this.postRepo.create({
+            title: post.title,
+            author: post.author,
+            content: post.content,
+        });
+
+        return await this.postRepo.save(newPost);
     }
-    updatePost(id: number, updatedPost: Partial<Post>): Post {
-        const postIndex = this.posts.findIndex(post => post.id === id);
-        this.posts[postIndex] = { ...this.posts[postIndex], ...updatedPost, updatedAt: new Date() };
-        return this.posts[postIndex];
+   async updatePost(id: number, updatedPost: Partial<CreatePostDto>): Promise<Post> {
+       const post = await this.postRepo.findOne({where: {id}});
+       if(!post)
+        throw new NotFoundException('پست مربوطه پیدا نشد');
+
+       const updatePost = Object.assign(post, updatedPost);
+
+       await this.postRepo.save(updatePost);
+
+       return updatePost;
     }
-    deletePost(id: number): void {
-         const postIndex = this.posts.findIndex(post => post.id === id);
-        if (postIndex < 0)
+    async deletePost(id: number): Promise<Post> {
+        const post = await this.postRepo.findOne({where: {id}});
+        if (!post)
             throw new NotFoundException('پست مربوطه پیدا نشد');
 
-        this.posts = this.posts.filter(post => post.id !== id);
-    }
-
-    private getNextId(): number {
-        return this.posts.length > 0 ? Math.max(...this.posts.map(post => post.id)) + 1 : 1;
+        return await this.postRepo.remove(post);
     }
 }

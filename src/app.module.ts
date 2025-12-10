@@ -7,6 +7,8 @@ import { PostsModule } from './posts/posts.module';
 import Joi, * as joi from 'joi';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PostEntity } from './posts/entities/post.entity';
+import { AuthModule } from './auth/auth.module';
+import { AuthService } from './services/auth/auth.service';
 
 @Module({
   imports: [
@@ -29,8 +31,9 @@ import { PostEntity } from './posts/entities/post.entity';
     }),
     UserModule,
     PostsModule,
+    AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, AuthService],
 })
 export class AppModule {}
