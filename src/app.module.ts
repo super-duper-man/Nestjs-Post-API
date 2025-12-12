@@ -8,7 +8,6 @@ import Joi, * as joi from 'joi';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PostEntity } from './posts/entities/post.entity';
 import { AuthModule } from './auth/auth.module';
-import { AuthService } from './services/auth/auth.service';
 import { UserEntity } from './auth/entities/user.entity';
 
 @Module({
@@ -28,13 +27,13 @@ import { UserEntity } from './auth/entities/user.entity';
       port: 5432,
       database: 'Nestjs-Posts',
       entities: [PostEntity, UserEntity],
-      synchronize: true
+      synchronize: true,
     }),
     UserModule,
     PostsModule,
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService, AuthService],
+  providers: [AppService],
 })
 export class AppModule {}
