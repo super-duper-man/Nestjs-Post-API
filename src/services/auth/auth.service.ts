@@ -10,6 +10,7 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from 'src/auth/dtos/login.dto';
 import { JwtService } from '@nestjs/jwt';
+import { Payload } from 'src/interfaces/payload.interface';
 
 @Injectable()
 export class AuthService {
@@ -24,7 +25,7 @@ export class AuthService {
       where: { email: dto.email },
     });
 
-    if (!exitsUser)
+    if (exitsUser)
       throw new ConflictException(
         'کاربری با این ایمیل آدرس قبلا ساخته شده است',
       );
@@ -36,7 +37,6 @@ export class AuthService {
     });
 
     const { password, ...result } = await this.userRepo.save(newUser);
-
     return {
       user: result,
       message: 'User Registered Successfully',
@@ -46,7 +46,7 @@ export class AuthService {
   async login(dto: LoginDto) {
     const user = await this.userRepo.findOne({ where: { email: dto.email } });
 
-    if (!user || (await !this.verifyPassword(dto.password, user.password)))
+    if (!user || !(await this.verifyPassword(dto.password, user.password)))
       throw new UnauthorizedException('نام کاربری یا رمز عبور اشتباه است');
 
     const tokens = await this.generateTokens(user);
@@ -57,7 +57,7 @@ export class AuthService {
   async refreshToken(refreshToken: string) {
     try {
       const payload = this.jwtService.verify(refreshToken, {
-        secret: 'super_secret_refresh_sign',
+        secret: process.env.JWT_REFRESH_SECRET,
       }) as {
         sub: number;
       };
@@ -73,6 +73,15 @@ export class AuthService {
     }
   }
 
+  async getCurrentUser(id: number): Promise<Partial<UserEntity>> {
+    const user = await this.userRepo.findOneBy({ id });
+
+    if (!user) throw new UnauthorizedException('User not found!');
+
+    const { password, ...result } = user;
+    return result;
+  }
+
   private async generateTokens(user: UserEntity) {
     return {
       accessToken: this.generateAccessToken(user),
@@ -81,14 +90,14 @@ export class AuthService {
   }
 
   private generateAccessToken(user: UserEntity) {
-    const payload = {
+    const payload: Payload = {
       email: user.email,
       sub: user.id,
       role: user.role,
     };
 
     return this.jwtService.sign(payload, {
-      secret: 'super_secret_sign',
+      secret: process.env.JWT_SIGN_SECRET,
       expiresIn: '15m',
     });
   }
@@ -99,7 +108,7 @@ export class AuthService {
     };
 
     return this.jwtService.sign(payload, {
-      secret: 'super_secret_refresh_sign',
+      secret: process.env.JWT_REFRESH_SECRET,
       expiresIn: '7d',
     });
   }
@@ -112,6 +121,6 @@ export class AuthService {
   }
 
   private async hashPassword(password: string): Promise<string> {
-    return await bcrypt.hash(password, 24);
+    return await bcrypt.hash(password, 10);
   }
 }
