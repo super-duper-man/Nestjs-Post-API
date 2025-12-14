@@ -11,7 +11,6 @@ import * as bcrypt from 'bcrypt';
 import { LoginDto } from 'src/auth/dtos/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { Payload } from 'src/interfaces/payload.interface';
-
 @Injectable()
 export class AuthService {
   constructor(
@@ -75,7 +74,6 @@ export class AuthService {
 
   async getCurrentUser(id: number): Promise<Partial<UserEntity>> {
     const user = await this.userRepo.findOneBy({ id });
-
     if (!user) throw new UnauthorizedException('User not found!');
 
     const { password, ...result } = user;

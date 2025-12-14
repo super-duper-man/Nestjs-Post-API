@@ -41,35 +41,35 @@ export class PostsController {
   async getAllWithQuery(
     @Query('search') search?: string,
   ): Promise<PostInterface[]> {
-    const posts = await this.postsService.getAllPosts();
-    if (search) {
+    const posts = await this.postsService.getAllPosts() as unknown as PostInterface[];
+    if (search && posts) {
       return posts.filter(
         (posts) =>
-          posts.title.toLowerCase().includes(search.toLowerCase()) ||
-          posts.content.toLowerCase().includes(search.toLowerCase()),
+          posts?.title.toLowerCase().includes(search.toLowerCase()) ||
+          posts?.content.toLowerCase().includes(search.toLowerCase()),
       );
     }
     return posts;
   }
 
-  @ApiOperation({ summary: 'Get post by id' })
-  @ApiParam({ name: 'id', description: 'Post id' })
-  @ApiResponse({ status: 200, description: 'Post returned' })
-  @Get(':id')
-  @HttpCode(HttpStatus.OK)
-  async getPostById(
-    @Param('id', ParseIntPipe, PostExistPipe) id: number,
-  ): Promise<PostInterface> {
-    return await this.postsService.getPostById(id);
-  }
+  // @ApiOperation({ summary: 'Get post by id' })
+  // @ApiParam({ name: 'id', description: 'Post id' })
+  // @ApiResponse({ status: 200, description: 'Post returned' })
+  // @Get(':id')
+  // @HttpCode(HttpStatus.OK)
+  // async getPostById(
+  //   @Param('id', ParseIntPipe, PostExistPipe) id: number,
+  // ): Promise<PostInterface> {
+  //   return await this.postsService.getPostById(id);
+  // }
 
-  @ApiOperation({ summary: 'Create Post' })
-  @ApiResponse({ status: 201 })
-  @Post()
-  @HttpCode(HttpStatus.CREATED)
-  async createPost(@Body() post: CreatePostDto): Promise<PostInterface> {
-    return await this.postsService.createPost(post);
-  }
+  // @ApiOperation({ summary: 'Create Post' })
+  // @ApiResponse({ status: 201 })
+  // @Post()
+  // @HttpCode(HttpStatus.CREATED)
+  // async createPost(@Body() post: CreatePostDto): Promise<PostInterface> {
+  //   return await this.postsService.createPost(post);
+  // }
 
   @ApiOperation({ summary: 'Update post by id' })
   @ApiParam({ name: 'id', description: 'Post id' })
@@ -83,14 +83,14 @@ export class PostsController {
     return await this.postsService.updatePost(id, post);
   }
 
-  @ApiOperation({ summary: 'Delete post by id' })
-  @ApiParam({ name: 'id', description: 'Post id' })
-  @ApiResponse({ status: 200 })
-  @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async deletePost(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<PostInterface> {
-    return await this.postsService.deletePost(id);
-  }
+  // @ApiOperation({ summary: 'Delete post by id' })
+  // @ApiParam({ name: 'id', description: 'Post id' })
+  // @ApiResponse({ status: 200 })
+  // @Delete(':id')
+  // @HttpCode(HttpStatus.NO_CONTENT)
+  // async deletePost(
+  //   @Param('id', ParseIntPipe) id: number,
+  // ): Promise<PostInterface> {
+  //   return await this.postsService.deletePost(id);
+  // }
 }

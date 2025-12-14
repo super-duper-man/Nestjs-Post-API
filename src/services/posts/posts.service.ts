@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { UserEntity } from 'src/auth/entities/user.entity';
 import { Post } from 'src/interfaces/posts/posts.interface';
 import { CreatePostDto } from 'src/posts/dtos/create-post.dto';
 import { PostEntity } from 'src/posts/entities/post.entity';
@@ -26,28 +27,30 @@ export class PostsService {
 
     constructor(@InjectRepository(PostEntity) private readonly postRepo: Repository<PostEntity>) { }
 
-    async getAllPosts(): Promise<Post[]> {
-        const posts = await this.postRepo.find();
+    async getAllPosts(): Promise<Partial<PostEntity>[]> {
+        const posts = await this.postRepo.find({
+            relations: ['author']
+        });
         return posts;
     }
-   async getPostById(id: number): Promise<Post> {
-        const post = await this.postRepo.findOneBy({id});
+   async getPostById(id: number): Promise<Partial<PostEntity>> {
+        const post = await this.postRepo.findOne({where: {id}, relations: ['author']})
         if (!post)
             throw new NotFoundException('پست مربوطه پیدا نشد');
 
         return post;
     }
-   async createPost(post: CreatePostDto): Promise<Post> {
+   async createPost(post: CreatePostDto, author: UserEntity): Promise<Partial<PostEntity>> {
         const newPost = this.postRepo.create({
             title: post.title,
-            author: post.author,
             content: post.content,
+            author
         });
 
         return await this.postRepo.save(newPost);
     }
    async updatePost(id: number, updatedPost: Partial<CreatePostDto>): Promise<Post> {
-       const post = await this.postRepo.findOne({where: {id}});
+       const post = await this.postRepo.findOne({where: {id,}});
        if(!post)
         throw new NotFoundException('پست مربوطه پیدا نشد');
 
@@ -57,7 +60,7 @@ export class PostsService {
 
        return updatePost;
     }
-    async deletePost(id: number): Promise<Post> {
+    async deletePost(id: number): Promise<Partial<PostEntity>> {
         const post = await this.postRepo.findOne({where: {id}});
         if (!post)
             throw new NotFoundException('پست مربوطه پیدا نشد');

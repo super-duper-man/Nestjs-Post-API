@@ -1,16 +1,20 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { log } from 'console';
 import { LoginDto } from 'src/auth/dtos/login.dto';
 import { RefreshDto } from 'src/auth/dtos/refresh.dto';
 import { RegisterDto } from 'src/auth/dtos/register.dto';
+import { UserRole } from 'src/auth/entities/user.entity';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
+import { Roles } from 'src/decorators/role.decorator';
 import { JwtAuthGuard } from 'src/guards/jwt-auth/jwt-auth.guard';
+import { RolesGuard } from 'src/guards/roles/roles.guard';
 import { AuthService } from 'src/services/auth/auth.service';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @ApiOperation({ summary: 'register user' })
   @ApiResponse({ status: 201, description: 'Created user returned' })
@@ -32,7 +36,9 @@ export class AuthController {
     return this.authService.refreshToken(token.refreshToken);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('Bearer')
+  @UseGuards(JwtAuthGuard,RolesGuard)
+  @Roles(UserRole.ADMIN)
   @Get('profile')
   getProfile(@CurrentUser() user:any){
     return user;
