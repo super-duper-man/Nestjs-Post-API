@@ -10,6 +10,7 @@ import { PostEntity } from './posts/entities/post.entity';
 import { AuthModule } from './auth/auth.module';
 import { UserEntity } from './auth/entities/user.entity';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -21,6 +22,10 @@ import { ThrottlerModule } from '@nestjs/throttler';
       //load: [appConfig],
     }),
     ThrottlerModule.forRoot([{ttl: 60000, limit: 50}]),
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 30000
+    }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',

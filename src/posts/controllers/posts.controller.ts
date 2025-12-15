@@ -22,10 +22,11 @@ import {
 import { CurrentUser } from 'src/decorators/current-user.decorator';
 import { createPostCompositeDecorator } from 'src/decorators/posts.decorator';
 import { JwtAuthGuard } from 'src/guards/jwt-auth/jwt-auth.guard';
-import { Post as PostInterface } from 'src/interfaces/posts/posts.interface';
+import { Post as PostInterface } from 'src/models/posts/posts.model';
 import { PostExistPipe } from 'src/pipes/post-exist/post-exist.pipe';
 import { PostsService } from 'src/services/posts/posts.service';
 import { CreatePostDto } from '../dtos/create-post.dto';
+import { PaginatedResponse } from 'src/models/pagination-meta.model';
 
 @ApiTags('Posts')
 @Controller('posts')
@@ -43,20 +44,10 @@ export class PostsController {
   @Get()
   @HttpCode(HttpStatus.OK)
   async getAllWithQuery(
-    @Query('search') search?: string,
-  ): Promise<PostInterface[]> {
-    const posts = await this.postsService.getAllPosts() as unknown as PostInterface[];
-    const result = (search && posts) ? posts.filter(
-      (posts) =>
-        posts?.title.toLowerCase().includes(search.toLowerCase()) ||
-        posts?.content.toLowerCase().includes(search.toLowerCase()),
-    ).map(item => ({ id: item.id, title: item.title, content: item.content })) : posts;
-
-    return result.map(({ id, title, content }) => ({
-      id,
-      title,
-      content,
-    }));
+    @Query('search') search: string = '',
+  ): Promise<PaginatedResponse<PostInterface>> {
+    const posts = await this.postsService.getAllPosts({title: search});
+    return posts;
   }
 
   @ApiOperation({ summary: 'Get post by id' })

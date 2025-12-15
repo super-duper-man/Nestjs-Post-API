@@ -10,7 +10,7 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from 'src/auth/dtos/login.dto';
 import { JwtService } from '@nestjs/jwt';
-import { Payload } from 'src/interfaces/payload.interface';
+import { Payload } from 'src/models/payload.model';
 @Injectable()
 export class AuthService {
   constructor(
