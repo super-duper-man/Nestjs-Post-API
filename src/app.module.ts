@@ -9,6 +9,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PostEntity } from './posts/entities/post.entity';
 import { AuthModule } from './auth/auth.module';
 import { UserEntity } from './auth/entities/user.entity';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { UserEntity } from './auth/entities/user.entity';
       }),
       //load: [appConfig],
     }),
+    ThrottlerModule.forRoot([{ttl: 60000, limit: 50}]),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',

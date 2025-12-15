@@ -9,6 +9,7 @@ import { CurrentUser } from 'src/decorators/current-user.decorator';
 import { ProfileActionDecorator } from 'src/decorators/profile-action-decorator.decorator';
 import { Roles } from 'src/decorators/role.decorator';
 import { JwtAuthGuard } from 'src/guards/jwt-auth/jwt-auth.guard';
+import { LoginThrottlerGuardGuard } from 'src/guards/login-throttler-guard/login-throttler-guard.guard';
 import { RolesGuard } from 'src/guards/roles/roles.guard';
 import { AuthService } from 'src/services/auth/auth.service';
 
@@ -25,6 +26,7 @@ export class AuthController {
     return this.authService.register(userDto);
   }
 
+  @UseGuards(LoginThrottlerGuardGuard)
   @Post('login')
   @HttpCode(HttpStatus.CREATED)
   login(@Body() loginDto: LoginDto) {
