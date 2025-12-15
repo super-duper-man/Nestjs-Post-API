@@ -6,6 +6,7 @@ import { RefreshDto } from 'src/auth/dtos/refresh.dto';
 import { RegisterDto } from 'src/auth/dtos/register.dto';
 import { UserRole } from 'src/auth/entities/user.entity';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
+import { ProfileActionDecorator } from 'src/decorators/profile-action-decorator.decorator';
 import { Roles } from 'src/decorators/role.decorator';
 import { JwtAuthGuard } from 'src/guards/jwt-auth/jwt-auth.guard';
 import { RolesGuard } from 'src/guards/roles/roles.guard';
@@ -36,11 +37,9 @@ export class AuthController {
     return this.authService.refreshToken(token.refreshToken);
   }
 
-  @ApiBearerAuth('Bearer')
-  @UseGuards(JwtAuthGuard,RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @ProfileActionDecorator(UserRole.ADMIN)
   @Get('profile')
-  getProfile(@CurrentUser() user:any){
+  getProfile(@CurrentUser() user: any) {
     return user;
   }
 }

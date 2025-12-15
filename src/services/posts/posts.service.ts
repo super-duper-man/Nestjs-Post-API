@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserEntity } from 'src/auth/entities/user.entity';
+import { UserEntity, UserRole } from 'src/auth/entities/user.entity';
 import { Post } from 'src/interfaces/posts/posts.interface';
 import { CreatePostDto } from 'src/posts/dtos/create-post.dto';
 import { PostEntity } from 'src/posts/entities/post.entity';
@@ -33,14 +33,14 @@ export class PostsService {
         });
         return posts;
     }
-   async getPostById(id: number): Promise<Partial<PostEntity>> {
-        const post = await this.postRepo.findOne({where: {id}, relations: ['author']})
+    async getPostById(id: number): Promise<PostEntity> {
+        const post = await this.postRepo.findOne({ where: { id }, relations: ['author'] });
         if (!post)
             throw new NotFoundException('پست مربوطه پیدا نشد');
 
         return post;
     }
-   async createPost(post: CreatePostDto, author: UserEntity): Promise<Partial<PostEntity>> {
+    async createPost(post: CreatePostDto, author: UserEntity): Promise<PostEntity> {
         const newPost = this.postRepo.create({
             title: post.title,
             content: post.content,
@@ -49,22 +49,27 @@ export class PostsService {
 
         return await this.postRepo.save(newPost);
     }
-   async updatePost(id: number, updatedPost: Partial<CreatePostDto>): Promise<Post> {
-       const post = await this.postRepo.findOne({where: {id,}});
-       if(!post)
-        throw new NotFoundException('پست مربوطه پیدا نشد');
+    async updatePost(id: number, updatedPost: Partial<CreatePostDto>, user: UserEntity): Promise<Post> {
+        const post = await this.getPostById(id);
 
-       const updatePost = Object.assign(post, updatedPost);
+        this.checkCorrespondUser(post.author, id);
 
-       await this.postRepo.save(updatePost);
+        const updatePost = Object.assign(post, updatedPost);
 
-       return updatePost;
+        await this.postRepo.save(updatePost);
+
+        return updatePost;
     }
-    async deletePost(id: number): Promise<Partial<PostEntity>> {
-        const post = await this.postRepo.findOne({where: {id}});
-        if (!post)
-            throw new NotFoundException('پست مربوطه پیدا نشد');
+    async deletePost(id: number, user: UserEntity): Promise<PostEntity> {
+        const post = await this.getPostById(id);
+
+        this.checkCorrespondUser(post.author, user.id)
 
         return await this.postRepo.remove(post);
+    }
+
+    private checkCorrespondUser(user: UserEntity, id: number): void {
+        if (user.id !== id)
+            throw new ForbiddenException('این پست مطعلق به کاربر مربوطه نمی‌باشد');
     }
 }
