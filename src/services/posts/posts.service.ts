@@ -60,12 +60,26 @@ export class PostsService {
 
         return response;
     }
-    async getPostById(id: number): Promise<PostEntity> {
+    async getPostById(id: number): Promise<Post> {
+        const cacheKey = `post_${id}`;
+        const cachedPost = await this.cacheManager.get<Post>(cacheKey);
+
+        if(cachedPost){
+             console.log(`Cache Hit ======> Returning post from cache: ${cacheKey}`);
+            return cachedPost;
+        }
+
+         console.log(`Cache Miss ======> Returning post from database`);
+
         const post = await this.postRepo.findOne({ where: { id }, relations: ['author'] });
         if (!post)
             throw new NotFoundException('پست مربوطه پیدا نشد');
-
-        return post;
+        const postResponse: Post = {
+            id: post.id,
+            title: post.title,
+            content: post.content
+        }
+        return postResponse;
     }
     async createPost(post: CreatePostDto, author: UserEntity): Promise<PostEntity> {
         const newPost = this.postRepo.create({
@@ -76,23 +90,32 @@ export class PostsService {
 
         return await this.postRepo.save(newPost);
     }
+
     async updatePost(id: number, updatedPost: Partial<CreatePostDto>, user: UserEntity): Promise<Post> {
-        const post = await this.getPostById(id);
+        const post = await this.postRepo.findOne({ where: { id }, relations: ['author'] });
 
-        this.checkCorrespondUser(post.author, id);
+        post && this.checkCorrespondUser(post.author, user.id);
 
-        const updatePost = Object.assign(post, updatedPost);
+        const updatePost = post && Object.assign(post, updatedPost);
 
-        await this.postRepo.save(updatePost);
-
-        return updatePost;
+        updatePost && await this.postRepo.save(updatePost);
+        const _post:Post = {
+            id: Number(updatePost?.id),
+            title: String(updatePost?.title),
+            content: String(updatePost?.content),
+        }
+        return _post;
     }
-    async deletePost(id: number, user: UserEntity): Promise<PostEntity> {
-        const post = await this.getPostById(id);
+    async deletePost(id: number, user: UserEntity) {
+        const post = await this.postRepo.findOne({ where: { id }, relations: ['author'] });
+
+        if (!post)
+            throw new NotFoundException('پست مربوطه پیدا نشد');
 
         this.checkCorrespondUser(post.author, user.id);
 
         return await this.postRepo.remove(post);
+
     }
 
     private checkCorrespondUser(user: UserEntity, id: number): void {
