@@ -64,12 +64,12 @@ export class PostsService {
         const cacheKey = `post_${id}`;
         const cachedPost = await this.cacheManager.get<Post>(cacheKey);
 
-        if(cachedPost){
-             console.log(`Cache Hit ======> Returning post from cache: ${cacheKey}`);
+        if (cachedPost) {
+            console.log(`Cache Hit ======> Returning post from cache: ${cacheKey}`);
             return cachedPost;
         }
 
-         console.log(`Cache Miss ======> Returning post from database`);
+        console.log(`Cache Miss ======> Returning post from database`);
 
         const post = await this.postRepo.findOne({ where: { id }, relations: ['author'] });
         if (!post)
@@ -78,7 +78,7 @@ export class PostsService {
             id: post.id,
             title: post.title,
             content: post.content
-        }
+        };
         return postResponse;
     }
     async createPost(post: CreatePostDto, author: UserEntity): Promise<PostEntity> {
@@ -87,6 +87,8 @@ export class PostsService {
             content: post.content,
             author
         });
+
+        await this.invalidateAllExistingCache();
 
         return await this.postRepo.save(newPost);
     }
@@ -99,11 +101,14 @@ export class PostsService {
         const updatePost = post && Object.assign(post, updatedPost);
 
         updatePost && await this.postRepo.save(updatePost);
-        const _post:Post = {
+        const _post: Post = {
             id: Number(updatePost?.id),
             title: String(updatePost?.title),
             content: String(updatePost?.content),
-        }
+        };
+
+        await this.cacheManager.del(`post_${id}`);
+        await this.invalidateAllExistingCache();
         return _post;
     }
     async deletePost(id: number, user: UserEntity) {
@@ -113,6 +118,10 @@ export class PostsService {
             throw new NotFoundException('پست مربوطه پیدا نشد');
 
         this.checkCorrespondUser(post.author, user.id);
+
+        await this.cacheManager.del(`post_${id}`);
+
+        await this.invalidateAllExistingCache();
 
         return await this.postRepo.remove(post);
 
@@ -126,5 +135,13 @@ export class PostsService {
     private generatePostsListCacheKey(query: FindPost): string {
         const { page = 1, limit = 10, title } = query;
         return `posts_list_page${page}_limit${limit}_title${title || 'all'}`;
+    }
+
+    private async invalidateAllExistingCache() {
+        for(const key of this.postListCacheKeys){
+            await this.cacheManager.del(key)
+        }
+
+        this.postListCacheKeys.clear();
     }
 }
