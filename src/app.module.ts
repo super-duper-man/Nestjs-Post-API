@@ -11,6 +11,10 @@ import { AuthModule } from './auth/auth.module';
 import { UserEntity } from './auth/entities/user.entity';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { CacheModule } from '@nestjs/cache-manager';
+import { FileUploadModule } from './file-upload/file-upload.module';
+import { FileUploadService } from './services/file-upload/file-upload.service';
+import { EventsModule } from './events/events.module';
+import { UserEventService } from './services/user-event/user-event.service';
 
 @Module({
   imports: [
@@ -39,8 +43,10 @@ import { CacheModule } from '@nestjs/cache-manager';
     UserModule,
     PostsModule,
     AuthModule,
+    FileUploadModule,
+    EventsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, FileUploadService, UserEventService],
 })
 export class AppModule {}
