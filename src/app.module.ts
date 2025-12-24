@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
@@ -15,6 +15,7 @@ import { FileUploadModule } from './file-upload/file-upload.module';
 import { FileUploadService } from './services/file-upload/file-upload.service';
 import { EventsModule } from './events/events.module';
 import { UserEventService } from './services/user-event/user-event.service';
+import { LoggerMiddleware } from './common/middlewares/logger/logger.middleware';
 
 @Module({
   imports: [
@@ -25,7 +26,7 @@ import { UserEventService } from './services/user-event/user-event.service';
       }),
       //load: [appConfig],
     }),
-    ThrottlerModule.forRoot([{ttl: 60000, limit: 50}]),
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 50 }]),
     CacheModule.register({
       isGlobal: true,
       ttl: 30000
@@ -49,4 +50,8 @@ import { UserEventService } from './services/user-event/user-event.service';
   controllers: [AppController],
   providers: [AppService, FileUploadService, UserEventService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}
