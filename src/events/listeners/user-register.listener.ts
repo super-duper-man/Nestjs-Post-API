@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { OnEvent } from "@nestjs/event-emitter";
-import { UserEnum } from "src/enums/user.enum";
-import type { UserRegisteredEvent } from "src/models/userRegisteredEvent.model";
+import { UserEnum } from "src/common/enums/user.enum";
+import type { UserRegisteredEvent } from "src/common/models/userRegisteredEvent.model";
 
 @Injectable()
 export class UserRegisteredListener {

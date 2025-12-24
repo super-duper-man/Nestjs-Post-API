@@ -1,10 +1,15 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { LoggingInterceptor } from './common/interceptors/logging/logging.interceptor';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const logger = new Logger(`Bootstrap: ${bootstrap.name}`);
+
+  const app = await NestFactory.create(AppModule, {
+    logger: ['error', 'log', 'debug', 'warn', 'verbose']
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -39,6 +44,8 @@ async function bootstrap() {
         persistAuthorization: true
       }
     });
+
+  app.useGlobalInterceptors(new LoggingInterceptor);
 
   await app.listen(process.env.PORT ?? 3000);
 }

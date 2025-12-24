@@ -22,11 +22,11 @@ import {
 import { CurrentUser } from 'src/decorators/current-user.decorator';
 import { createPostCompositeDecorator } from 'src/decorators/posts.decorator';
 import { JwtAuthGuard } from 'src/guards/jwt-auth/jwt-auth.guard';
-import { Post as PostInterface } from 'src/models/posts/posts.model';
+import { Post as PostInterface } from 'src/common/models/posts/posts.model';
 import { PostExistPipe } from 'src/pipes/post-exist/post-exist.pipe';
 import { PostsService } from 'src/services/posts/posts.service';
 import { CreatePostDto } from '../dtos/create-post.dto';
-import { PaginatedResponse } from 'src/models/pagination-meta.model';
+import { PaginatedResponse } from 'src/common/models/pagination-meta.model';
 
 @ApiTags('Posts')
 @Controller('posts')

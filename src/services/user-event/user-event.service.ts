@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UserEntity } from 'src/auth/entities/user.entity';
-import { UserEnum } from 'src/enums/user.enum';
-import { UserRegisteredEvent } from 'src/models/userRegisteredEvent.model';
+import { UserEnum } from 'src/common/enums/user.enum';
+import { UserRegisteredEvent } from 'src/common/models/userRegisteredEvent.model';
 
 @Injectable()
 export class UserEventService {
